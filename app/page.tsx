@@ -8,13 +8,13 @@ const Home: NextPage = () => {
   return (
     <div className="container">
       <Head>
-        <title>电场模拟器 | 物理交互演示</title>
+        <title>Προσομοιωτής ηλεκτρικού πεδίου | Φυσική διαδραστική επίδειξη</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <h1>电场线模拟器</h1>
+      <h1>Προσομοιωτής γραμμής ηλεκτρικού πεδίου</h1>
       <p className="instruction">
-        点击放置电荷，拖拽移动位置，观察电场分布
+      Κάντε κλικ για να τοποθετήσετε το φορτίο, σύρετε για να μετακινήσετε τη θέση και παρατηρήστε την κατανομή του ηλεκτρικού πεδίου.
       </p>
 
       <ElectricFieldSimulator />
