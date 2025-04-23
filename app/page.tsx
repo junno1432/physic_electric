@@ -23,6 +23,7 @@ const Home: NextPage = () => {
         :root {
           --primary-color: #2c3e50;
           --active-color: #3498db;
+          user-select: none;
         }
 
         body {
