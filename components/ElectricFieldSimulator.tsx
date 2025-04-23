@@ -14,25 +14,28 @@ type FieldLine = {
 };
 
 const k = 8.988e9;
-const STEP_SIZE = 3;
-const MAX_STEPS = 2000;
+const STEP_SIZE = 5;
+const MAX_STEPS = 3000;
 const CHARGE_RADIUS = 20;
 const FIELD_LINE_DENSITY = 24;
-const ARROW_SPACING = 60;
+const ARROW_SPACING = 80;
 const ARROW_SIZE = 8;
 
-const ElectricFieldSimulator = ({
-  width = 1000,
-  height = 600,
+const ElectricFieldSimulator = (
+  {
+  width = 0,
+  height = 0,
 }: {
   width?: number;
   height?: number;
-}) => {
+}
+) => {
   const [charges, setCharges] = useState<Charge[]>([]);
   const [selectedChargeType, setSelectedChargeType] = useState<1 | -1>(1);
   const [showElectricField, setShowElectricField] = useState(true);
   const [fieldLines, setFieldLines] = useState<FieldLine[]>([]);
   const [draggingId, setDraggingId] = useState<number | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width, height });
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Υπολογισμός έντασης ηλεκτρικού πεδίου
@@ -50,6 +53,23 @@ const ElectricFieldSimulator = ({
     });
     return { Ex, Ey };
   }, [charges]);
+
+  // 添加窗口大小变化处理
+  useEffect(() => {
+    const handleResize = () => {
+      setCanvasSize({
+        width: window.innerWidth * 0.95,
+        height: window.innerHeight * 0.8
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // 初始化大小
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // 场线追踪算法
   const traceFieldLine = useCallback((startX: number, startY: number, direction: number): FieldLine => {
@@ -72,7 +92,7 @@ const ElectricFieldSimulator = ({
       x += dx;
       y += dy;
 
-      if (x < 0 || x > width || y < 0 || y > height) break;
+      if (x < 0 || x > canvasSize.width || y < 0 || y > canvasSize.height) break;
 
       hitTarget = charges.some(c => {
         const dist = Math.hypot(x - c.x, y - c.y);
@@ -91,7 +111,7 @@ const ElectricFieldSimulator = ({
     }
 
     return { points };
-  }, [calculateElectricField, charges, width, height]);
+  }, [calculateElectricField, charges, canvasSize.width, canvasSize.height]);
 
   // 生成场线（防抖处理）
   const generateFieldLines = useMemo(
@@ -149,7 +169,7 @@ const ElectricFieldSimulator = ({
     }
     ctx.closePath();
     
-    ctx.fillStyle = 'rgba(255, 80, 80, 0.9)';
+    ctx.fillStyle = 'rgba(39, 48, 67, 0.9)';
     ctx.fill();
     ctx.restore();
   }, []);
@@ -162,10 +182,10 @@ const ElectricFieldSimulator = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
 
     if (showElectricField) {
-      ctx.strokeStyle = 'rgba(255, 80, 80, 0.6)';
+      ctx.strokeStyle = 'rgba(39, 48, 67, 0.6)';
       ctx.lineWidth = 2;
       ctx.lineCap = 'round';
 
@@ -229,13 +249,15 @@ const ElectricFieldSimulator = ({
       ctx.textBaseline = 'middle';
       ctx.fillText(charge.q > 0 ? '+' : '−', charge.x, charge.y);
     });
-  }, [charges, fieldLines, showElectricField, width, height, drawArrow]);
+  }, [charges, fieldLines, showElectricField, canvasSize.width, canvasSize.height, drawArrow]);
 
   // 交互处理
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scaleX = e.currentTarget.width / rect.width;
+    const scaleY = e.currentTarget.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
     
     setCharges(prev => [
       ...prev,
@@ -247,8 +269,10 @@ const ElectricFieldSimulator = ({
     if (!draggingId) return;
     
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scaleX = e.currentTarget.width / rect.width;
+    const scaleY = e.currentTarget.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
 
     setCharges(prev => 
       prev.map(c => c.id === draggingId ? { ...c, x, y } : c)
@@ -267,7 +291,7 @@ const ElectricFieldSimulator = ({
   }, [draw]);
 
   return (
-    <div className="simulator">
+    <div className="simulator" style={{ width: '100%', height: '100%' }}>
       <div className="controls">
         <button 
           onClick={() => setSelectedChargeType(1)}
@@ -294,13 +318,23 @@ const ElectricFieldSimulator = ({
 
       <canvas
         ref={canvasRef}
-        width={width}
-        height={height}
+        width={canvasSize.width}
+        height={canvasSize.height}
+        style={{
+          maxWidth: '100%',
+          maxHeight: '100%',
+          display: 'block',
+          margin: '0 auto',
+          border: '1px solid #ccc'
+        }}
         onClick={handleCanvasClick}
         onMouseDown={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
+          const scaleX = e.currentTarget.width / rect.width;
+          const scaleY = e.currentTarget.height / rect.height;
+          const x = (e.clientX - rect.left) * scaleX;
+          const y = (e.clientY - rect.top) * scaleY;
+          
           const charge = charges.find(c => 
             Math.hypot(x - c.x, y - c.y) < CHARGE_RADIUS
           );

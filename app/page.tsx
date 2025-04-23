@@ -27,14 +27,14 @@ const Home: NextPage = () => {
 
         body {
           margin: 0;
-          padding: 20px;
+          padding: 10px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
             Oxygen, Ubuntu, Cantarell, sans-serif;
           background: #f5f6fa;
         }
 
         .container {
-          max-width: 1200px;
+          max-width: 90%;
           margin: 0 auto;
         }
 
@@ -42,6 +42,8 @@ const Home: NextPage = () => {
           color: var(--primary-color);
           border-bottom: 2px solid #eee;
           padding-bottom: 0.5em;
+          text-align: center;
+          font-weight: bold;
         }
 
         .instruction {
@@ -55,6 +57,7 @@ const Home: NextPage = () => {
           background: white;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          width: 100%;
         }
 
         button {
@@ -91,6 +94,7 @@ const Home: NextPage = () => {
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           transition: box-shadow 0.2s;
+
         }
 
         canvas:hover {
